@@ -50,10 +50,14 @@ jobs:
           echo "Successfully connected to EC2 instance"
           sudo docker pull chaitanyashetty47/montm:latest
           sudo docker pull chaitanyashetty47/webhook:latest
-          sudo docker stop montm || true
-          sudo docker rm montm || true
-          sudo docker stop webhook || true
-          sudo docker rm webhook || true
+
+          sudo docker stop montm webhook 2>/dev/null || true
+          sudo docker rm montm webhook 2>/dev/null || true
+
           sudo docker run -d --name webhook -p 3003:3003 chaitanyashetty47/webhook:latest
           export BACKEND_URL=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4):3003
           sudo docker run -d --name montm -p 3005:3000 -e BACKEND_URL=$BACKEND_URL chaitanyashetty47/montm:latest
+
+          sudo docker ps
+
+          echo "Successfully deployed to EC2"
