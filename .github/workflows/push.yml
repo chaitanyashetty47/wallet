@@ -44,6 +44,8 @@ jobs:
         host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.SSH_USERNAME }}
         key: ${{ secrets.SSH_KEY }}
+        debug: true
+        timeout: 60s
         script: |
           sudo docker pull chaitanyashetty47/montm:latest
           sudo docker pull chaitanyashetty47/webhook:latest
