@@ -3,8 +3,8 @@ name: Build and Deploy to Docker Hub
 on:
   push:
     branches:
-      - main  
-      
+      - main
+
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
@@ -48,22 +48,36 @@ jobs:
         timeout: 60s
         script: |
           echo "Successfully connected to EC2 instance"
-          sudo docker pull chaitanyashetty47/montm:latest
-          sudo docker pull chaitanyashetty47/webhook:latest
-
+          
+          # Stop and remove existing containers
           sudo docker stop montm webhook 2>/dev/null || true
           sudo docker rm montm webhook 2>/dev/null || true
-
-          sudo docker run -d --name webhook -p 3003:3003 chaitanyashetty47/webhook:latest
-         
-          TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
           
+          # Remove old images
+          sudo docker rmi chaitanyashetty47/montm:latest chaitanyashetty47/webhook:latest 2>/dev/null || true
+          
+          # Clear Docker cache
+          sudo docker system prune -af
+          
+          # Pull latest images
+          sudo docker pull chaitanyashetty47/montm:latest
+          sudo docker pull chaitanyashetty47/webhook:latest
+          
+          # Get public IP
+          TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
           PUBLIC_IP=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/public-ipv4)
           
-          export BACKEND_URL=$PUBLIC_IP:3003 
-
-          sudo docker run -d --name montm -p 3005:3000 -e BACKEND_URL=$BACKEND_URL -e NEXTAUTH_URL=https://montm.thechaicoder.com chaitanyashetty47/montm:latest
+          # Run containers with latest images
+          sudo docker run -d --name webhook --pull always -p 3003:3003 chaitanyashetty47/webhook:latest
           
+          export BACKEND_URL=$PUBLIC_IP:3003
+          sudo docker run -d --name montm --pull always -p 3005:3000 -e BACKEND_URL=$BACKEND_URL -e NEXTAUTH_URL=https://montm.thechaicoder.com chaitanyashetty47/montm:latest
+          
+          # Verify running containers
           sudo docker ps
-
+          
           echo "Successfully deployed to EC2"
+
+          # Reload Nginx to ensure it picks up any changes
+          sudo systemctl reload nginx
+          
