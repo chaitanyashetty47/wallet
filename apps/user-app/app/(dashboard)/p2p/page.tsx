@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import { SendCard } from "../../../components/SendCard";
 import { authOptions } from "../../lib/auth";
 import prisma from "@repo/db/client";
-import { P2PTransactions } from "../../../components/P2PTransactions";
+import  P2PTransactions  from "../../../components/P2PTransactions";
 
 async function getP2PTransactions() : Promise<({
     time: Date;
@@ -54,7 +54,7 @@ export default async function () {
 
   return <div className="w-screen">
     <div className="text-4xl text-[#6a51a6] pt-8 mb-8 font-bold">
-      P2P Transfer
+    P2P Transfer
     </div>
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 p-4">
       <div>

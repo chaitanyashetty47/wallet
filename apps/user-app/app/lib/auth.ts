@@ -62,8 +62,8 @@ export const authOptions = {
             return session
         }
     },
-    pages: {
-        signIn: '/auth/signin',
-    },
+    // pages: {
+    //     signIn: '/auth/signin',
+    // },
 }
   

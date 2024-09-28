@@ -1,18 +1,8 @@
-import React from 'react';
+"use client"
+import React, { useEffect, useState } from 'react';
 import { Card } from "@repo/ui/card";
 
-const getUserName = (userId:number) => {
-  switch (userId) {
-    case 1:
-      return "Alice";
-    case 2:
-      return "Bob";
-    default:
-      return `User ${userId}`;
-  }
-};
-
-export const P2PTransactions = ({
+const P2PTransactions = ({
   transactions
 }: {
   transactions: {
@@ -22,6 +12,26 @@ export const P2PTransactions = ({
     userId: number
   }[]
 }) => {
+  const [users, setUsers] = useState<{[key: number]: string}>({});
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      const userIds = [...new Set(transactions.map(t => t.userId))];
+      const promises = userIds.map(id => 
+        fetch(`/api/user/${id}`).then(res => res.json())
+      );
+      const userDetails = await Promise.all(promises);
+      const userMap = userDetails.reduce((acc, user) => {
+        acc[user.id] = user.name;
+        return acc;
+      }, {});
+      setUsers(userMap);
+   
+    };
+
+    fetchUsers();
+  }, [transactions]);
+
   if (!transactions.length) {
     return (
       <Card title="Recent Transactions">
@@ -39,9 +49,9 @@ export const P2PTransactions = ({
           <div key={index} className="flex justify-between">
             <div>
               <div className="text-sm">
-                {t.type === "DEBIT" 
-                  ? `Sent to ${getUserName(t.userId)}` 
-                  : `Received from ${getUserName(t.userId)}`}
+                {t.type === "DEBIT"
+                  ? `Sent to ${users[t.userId] || `User ${t.userId}`}`
+                  : `Received from ${users[t.userId] || `User ${t.userId}`}`}
               </div>
               <div className="text-slate-600 text-xs">
                 {t.time.toDateString()}
@@ -56,3 +66,5 @@ export const P2PTransactions = ({
     </Card>
   );
 };
+
+export default P2PTransactions;
