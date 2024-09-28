@@ -67,7 +67,7 @@ jobs:
           TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
           PUBLIC_IP=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/public-ipv4)
           
-          # Run containers with latest images
+          # Run containers with latest image
           sudo docker run -d --name webhook --pull always -p 3003:3003 chaitanyashetty47/webhook:latest
           
           export BACKEND_URL=$PUBLIC_IP:3003
